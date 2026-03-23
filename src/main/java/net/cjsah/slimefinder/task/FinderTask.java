@@ -1,6 +1,7 @@
 package net.cjsah.slimefinder.task;
 
 import net.cjsah.slimefinder.config.Config;
+import net.cjsah.slimefinder.config.Mode;
 import net.cjsah.slimefinder.data.ChunkInfo;
 import net.cjsah.slimefinder.data.Position;
 import net.cjsah.slimefinder.util.ImageUtil;
@@ -15,6 +16,7 @@ import java.util.List;
 public class FinderTask extends TimerTask {
     private final long seed;
 
+    private final Mode mode;
     private final Position center;
     private final Position offset;
     private final int radius;
@@ -22,6 +24,7 @@ public class FinderTask extends TimerTask {
 
     public FinderTask(Config config, long seed) {
         this.seed = seed;
+        this.mode = config.getMode();
         this.center = config.getCenter();
         this.offset = config.getOffset();
         this.radius = config.getRadius();
@@ -48,16 +51,13 @@ public class FinderTask extends TimerTask {
                 int cz = chunk.getZ() * 16 + this.offset.z();
                 for (int x = 0; x < 17; x++) {
                     for (int z = 0; z < 17; z++) {
-                        if (x == 0 && z == 0) continue;
                         int chunkX = chunk.getX() + x - 8;
                         int chunkZ = chunk.getZ() + z - 8;
 
                         int index = chunkX * length + chunkZ;
                         if (index < 0 || index >= chunks.length) continue;
 
-                        int dx = cx - Math.clamp(cx, chunkX * 16, chunkX * 16 + 15);
-                        int dz = cz - Math.clamp(cz, chunkZ * 16, chunkZ * 16 + 15);
-                        if (dx * dx + dz * dz <= 16384) {
+                        if (!this.mode.isCenter(x, z) && this.mode.isCovered(cx, cz, chunkX, chunkZ)) {
                             chunks[index].near();
                         }
                     }
@@ -79,7 +79,7 @@ public class FinderTask extends TimerTask {
             System.out.printf("Pos:[x=%d, z=%d] Chunk:[x=%d, z=%d] 共%d个史莱姆区块%n", px, pz, cx, cz, info.getCount());
 
             try {
-                BufferedImage image = ImageUtil.drawImage(chunks, info, length, this.offset);
+                BufferedImage image = ImageUtil.drawImage(chunks, info, length, this.offset, this.mode);
                 File file = new File("./images/(%d_%d)[%d_%d]_%d.png".formatted(px, pz, cx, cz, info.getCount()));
                 file.getParentFile().mkdirs();
                 ImageIO.write(image, "png", file);
@@ -89,5 +89,4 @@ public class FinderTask extends TimerTask {
         }
 
     }
-
 }

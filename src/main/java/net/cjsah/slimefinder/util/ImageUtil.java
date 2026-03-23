@@ -1,5 +1,6 @@
 package net.cjsah.slimefinder.util;
 
+import net.cjsah.slimefinder.config.Mode;
 import net.cjsah.slimefinder.data.ChunkInfo;
 import net.cjsah.slimefinder.data.Position;
 
@@ -10,7 +11,7 @@ import java.awt.image.BufferedImage;
 
 public class ImageUtil {
 
-    public static BufferedImage drawImage(ChunkInfo[] chunks, ChunkInfo info, int length, Position offset) {
+    public static BufferedImage drawImage(ChunkInfo[] chunks, ChunkInfo info, int length, Position offset, Mode mode) {
         int cx = 128 + offset.x();
         int cz = 128 + offset.z();
 
@@ -25,9 +26,7 @@ public class ImageUtil {
                 boolean isSlimeChunk = index >= 0 && index < chunks.length && chunks[index].isSlimeChunk();
                 Color color = isSlimeChunk ? Color.GREEN : Color.WHITE;
 
-                int dx = cx - Math.clamp(cx, x * 16, x * 16 + 15);
-                int dz = cz - Math.clamp(cz, z * 16, z * 16 + 15);
-                if (dx * dx + dz * dz > 16384 || (x == 8 && z == 8)) {
+                if (mode.isCenter(x, z) || !mode.isCovered(cx, cz, x, z)) {
                     color = getMarkColor(color);
                 }
 

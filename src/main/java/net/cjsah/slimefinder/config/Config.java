@@ -3,6 +3,7 @@ package net.cjsah.slimefinder.config;
 import lombok.Data;
 import net.cjsah.slimefinder.config.codec.Codec;
 import net.cjsah.slimefinder.config.codec.IntCodec;
+import net.cjsah.slimefinder.config.codec.ModeCodec;
 import net.cjsah.slimefinder.config.codec.PositionCodec;
 import net.cjsah.slimefinder.data.Position;
 
@@ -21,6 +22,7 @@ import java.util.Properties;
 public class Config {
     private static final List<Codec<?>> CODECS = new ArrayList<>(10);
 
+    private Mode mode = Mode.NORMAL;
     private Position center = Position.ZERO;
     private Position offset = new Position(8, 8);
     private int radius = 128;
@@ -65,7 +67,8 @@ public class Config {
             {"center", this.center.toString()},
             {"radius", String.valueOf(this.radius)},
             {"offset", this.offset.toString()},
-            {"record", String.valueOf(this.record)}
+            {"record", String.valueOf(this.record)},
+            {"mode", this.mode.getName()}
         };
 
         int keyWidth = "Field".length();
@@ -95,6 +98,7 @@ public class Config {
     }
 
     static {
+        CODECS.add(new ModeCodec("mode", Config::getMode, Config::setMode));
         CODECS.add(new PositionCodec("center", Config::getCenter, Config::setCenter));
         CODECS.add(new PositionCodec("offset", Config::getOffset, Config::setOffset));
         CODECS.add(new IntCodec("radius", Config::getRadius, Config::setRadius));
