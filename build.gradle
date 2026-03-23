@@ -24,6 +24,17 @@ jar {
                 'Main-Class': application.mainClass
         )
     }
+
+    doLast {
+        def builtJarName = archiveFileName.get()
+        copy {
+            from("scripts")
+            into(destinationDirectory)
+            filteringCharset = 'UTF-8'
+            // Replace placeholder token in script templates with the actual jar filename.
+            filter { String line -> line.replace('$filename$', builtJarName) }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

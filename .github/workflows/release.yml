@@ -1,0 +1,25 @@
+name: Mod Build
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          skip-decompress: true
+          name: 'Artifacts'
+          path: dist
+
+      - name: Test
+        run: |
+          ls -al dist
