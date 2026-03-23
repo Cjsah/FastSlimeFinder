@@ -20,7 +20,7 @@ jobs:
           path: dist
 
       - name: Rename artifact
-        run: mv dist/Artifacts.zip dist/{{ github.event.release.tag_name }}.zip
+        run: mv dist/Artifacts.zip dist/${{ github.event.release.tag_name }}.zip
 
       - name: Publish
         uses: softprops/action-gh-release@v2
