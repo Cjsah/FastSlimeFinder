@@ -2,11 +2,6 @@ plugins {
     id 'java'
     id 'application'
     id 'io.freefair.lombok' version '9.2.0'
-    id 'com.gradleup.shadow' version '9.4.0'
-}
-
-application {
-    mainClass = 'net.cjsah.slimefinder.Main'
 }
 
 repositories {
@@ -15,6 +10,20 @@ repositories {
 
 lombok {
     version = lombok_version
+}
+
+application {
+    mainClass = 'net.cjsah.slimefinder.Main'
+}
+
+jar {
+    from("LICENSE")
+
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass
+        )
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

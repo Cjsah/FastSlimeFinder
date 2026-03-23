@@ -68,7 +68,7 @@ public class FinderTask extends TimerTask {
             .toList();
 
         this.paused();
-        System.out.printf("搜索完成，共找到 %d 个合适的史莱姆区块. 耗时: %s%n", founded.size(), this.formatDuration());
+        System.out.printf("搜索完成，共找到前 %d 个合适的史莱姆区块. 耗时: %s%n", founded.size(), this.formatDuration());
         System.out.println("正在生成图片...");
 
         for (ChunkInfo info : founded) {
