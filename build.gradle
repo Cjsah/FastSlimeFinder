@@ -8,6 +8,13 @@ repositories {
     mavenCentral()
 }
 
+def buildNumber = System.getenv("GITHUB_RUN_NUMBER")
+if (buildNumber != null) {
+    version = "v${project.version}+build.${buildNumber}"
+} else {
+    version = "v${project.version}"
+}
+
 lombok {
     version = lombok_version
 }
