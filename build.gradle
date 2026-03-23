@@ -13,10 +13,6 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation "com.alibaba.fastjson2:fastjson2:${fastjson2_version}"
-}
-
 lombok {
     version = lombok_version
 }

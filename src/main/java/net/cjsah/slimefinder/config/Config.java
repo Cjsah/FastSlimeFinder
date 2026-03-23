@@ -1,9 +1,9 @@
 package net.cjsah.slimefinder.config;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONException;
-import com.alibaba.fastjson2.JSONWriter;
 import lombok.Data;
+import net.cjsah.slimefinder.config.codec.Codec;
+import net.cjsah.slimefinder.config.codec.IntCodec;
+import net.cjsah.slimefinder.config.codec.PositionCodec;
 import net.cjsah.slimefinder.data.Position;
 
 import java.io.File;
@@ -13,33 +13,23 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Data
 public class Config {
+    private static final List<Codec<?>> CODECS = new ArrayList<>(10);
+
     private Position center = Position.ZERO;
     private Position offset = new Position(8, 8);
     private int radius = 128;
     private int record = 20;
 
-    public static Config load() throws IOException {
-        File configFile = new File("config.json");
-        if (!configFile.exists()) {
-            Config defaultConfig = new Config();
-            String content = JSON.toJSONString(defaultConfig, JSONWriter.Feature.PrettyFormat);
-            Files.writeString(configFile.toPath(), content, StandardCharsets.UTF_8);
-            return defaultConfig.print();
-        }
-        String json = Files.readString(new File("config.json").toPath());
-        try {
-            return JSON.parseObject(json, Config.class).print();
-        } catch (JSONException e) {
-            System.out.println("配置文件读取失败");
-            throw e;
-        }
-    }
+    public static Config getOrCreateConfig() throws IOException {
+        File file = new File("config.properties");
+        Path path = file.toPath();
 
-    private static Properties getOrCreateProps(Path path) throws IOException {
         Config config = new Config();
         if (Files.isRegularFile(path)) {
             Properties props = new Properties();
@@ -47,35 +37,30 @@ public class Config {
                 props.load(reader);
             }
 
-            props.contains("center");
-            props.contains("offset");
-            props.contains("radius");
-            props.contains("record");
+            for (Codec<?> codec : CODECS) {
+                String value = props.getProperty(codec.getKey());
+                codec.decode(config, value);
+            }
 
-            props.getProperty()
-
-
-            return props;
+            config.print();
+            return config;
         }
 
-        Files.createDirectories(path.getParent());
+        file.getAbsoluteFile().getParentFile().mkdirs();
 
         Properties props = new Properties();
-        props.put("center", config.center.toString());
-        props.put("offset", config.offset.toString());
-        props.put("radius", config.radius);
-        props.put("record", config.record);
-
+        for (Codec<?> codec : CODECS) {
+            props.put(codec.getKey(), codec.encode(config));
+        }
         try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             props.store(writer, null);
         }
 
+        config.print();
         return config;
     }
 
-
-
-    public Config print() {
+    public void print() {
         String[][] rows = new String[][]{
             {"center", this.center.toString()},
             {"radius", String.valueOf(this.radius)},
@@ -107,6 +92,12 @@ public class Config {
             );
         }
         System.out.println(border);
-        return this;
+    }
+
+    static {
+        CODECS.add(new PositionCodec("center", Config::getCenter, Config::setCenter));
+        CODECS.add(new PositionCodec("offset", Config::getOffset, Config::setOffset));
+        CODECS.add(new IntCodec("radius", Config::getRadius, Config::setRadius));
+        CODECS.add(new IntCodec("record", Config::getRecord, Config::setRecord));
     }
 }

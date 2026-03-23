@@ -16,7 +16,7 @@ public abstract class TimerTask implements Runnable {
         this.startTime = Instant.now();
         this.start();
         this.paused();
-        System.out.printf("任务完成，耗时: %s", this.formatDuration());
+        System.out.printf("全部任务完成，耗时: %s", this.formatDuration());
     }
 
     public abstract void start();

@@ -1,17 +1,18 @@
 package net.cjsah.slimefinder;
 
 import net.cjsah.slimefinder.config.Config;
-import net.cjsah.slimefinder.logger.ConsoleIO;
 import net.cjsah.slimefinder.task.FinderTask;
 
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
     private static boolean running = true;
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws IOException {
-        Config config = Config.load();
+        Config config = Config.getOrCreateConfig();
 
         while (running) {
             System.out.println("###################");
@@ -20,11 +21,11 @@ public class Main {
             System.out.println("3.退出");
             System.out.println("###################");
 
-            String input = ConsoleIO.readLine("> ");
+            String input = readLine("> ");
             switch (input) {
                 case "1" -> {
                     try {
-                        long seed = Long.parseLong(ConsoleIO.readLine("请输入地图种子: "));
+                        long seed = Long.parseLong(readLine("请输入地图种子: "));
                         startSearch(config, seed);
                     } catch (NumberFormatException e) {
                         System.out.println("输入的种子无效");
@@ -32,7 +33,7 @@ public class Main {
                 }
                 case "2" -> {
                     System.out.println("正在重新加载配置...");
-                    config = Config.load();
+                    config = Config.getOrCreateConfig();
                 }
                 case "3" -> {
                     System.out.println("正在退出...");
@@ -56,5 +57,11 @@ public class Main {
         } catch (InterruptedException ignored) {
         }
     }
+
+    private static String readLine(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine().trim();
+    }
+
 }
 
