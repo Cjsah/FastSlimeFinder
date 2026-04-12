@@ -9,8 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ChunkInfo {
     private final int x;
     private final int z;
-    private final AtomicInteger counter = new AtomicInteger(0);
     private boolean isSlimeChunk = false;
+    private final AtomicInteger chunkCounter = new AtomicInteger(0);
+    private final AtomicInteger blockCounter = new AtomicInteger(0);
 
     // 来自https://minecraft.wiki/w/Slime
     public boolean updateIsSlimeChunk(long seed, int startX, int startZ) {
@@ -28,10 +29,19 @@ public class ChunkInfo {
     }
 
     public void near() {
-        this.counter.incrementAndGet();
+        this.chunkCounter.incrementAndGet();
     }
 
-    public int getCount() {
-        return this.counter.get();
+    public void near(int count) {
+        this.chunkCounter.incrementAndGet();
+        this.blockCounter.addAndGet(count);
+    }
+
+    public int getChunkCounter() {
+        return this.chunkCounter.get();
+    }
+
+    public int getBlockCounter() {
+        return this.blockCounter.get();
     }
 }

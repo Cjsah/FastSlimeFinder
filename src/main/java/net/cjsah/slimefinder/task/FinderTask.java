@@ -58,17 +58,26 @@ public class FinderTask extends TimerTask {
                         if (index < 0 || index >= chunks.length) continue;
 
                         if (!this.mode.isCenter(x, z) && this.mode.isCovered(cx, cz, chunkX, chunkZ)) {
-                            chunks[index].near();
+                            ChunkInfo center = chunks[index];
+                            center.near(this.mode.calcCoverBlockCount(this.offset, center, chunk));
                         }
                     }
                 }
             })
-            .sorted(Comparator.comparingInt(ChunkInfo::getCount).reversed())
+            .sorted(Comparator.comparingInt(ChunkInfo::getBlockCounter).reversed())
             .limit(this.record)
             .toList();
 
         this.paused();
         System.out.printf("搜索完成，共找到前 %d 个合适的史莱姆区块. 耗时: %s%n", founded.size(), this.formatDuration());
+        for (ChunkInfo info : founded) {
+            int cx = info.getX() + startX;
+            int cz = info.getZ() + startZ;
+            int px = cx * 16 + this.offset.x();
+            int pz = cz * 16 + this.offset.z();
+            System.out.printf("Pos:[x=%d, z=%d] Chunk:[x=%d, z=%d] 共%d个史莱姆区块, %d个方块%n", px, pz, cx, cz, info.getChunkCounter(), info.getBlockCounter());
+        }
+
         System.out.println("正在生成图片...");
 
         for (ChunkInfo info : founded) {
@@ -76,11 +85,10 @@ public class FinderTask extends TimerTask {
             int cz = info.getZ() + startZ;
             int px = cx * 16 + this.offset.x();
             int pz = cz * 16 + this.offset.z();
-            System.out.printf("Pos:[x=%d, z=%d] Chunk:[x=%d, z=%d] 共%d个史莱姆区块%n", px, pz, cx, cz, info.getCount());
 
             try {
                 BufferedImage image = ImageUtil.drawImage(chunks, info, length, this.offset, this.mode);
-                File file = new File("./images/(%d_%d)[%d_%d]_%d.png".formatted(px, pz, cx, cz, info.getCount()));
+                File file = new File("./images/%d_%d_(%d_%d)[%d_%d].png".formatted(info.getBlockCounter(), info.getChunkCounter(), px, pz, cx, cz));
                 file.getParentFile().mkdirs();
                 ImageIO.write(image, "png", file);
             } catch (Exception e) {
