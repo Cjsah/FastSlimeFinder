@@ -1,5 +1,6 @@
 package net.cjsah.slimefinder.config.codec;
 
+import net.cjsah.slimefinder.CLI;
 import net.cjsah.slimefinder.config.Config;
 import net.cjsah.slimefinder.data.Position;
 
@@ -20,13 +21,13 @@ public class PositionCodec extends Codec<Position> {
     @Override
     protected Position deserialize(String value) {
         if (value == null || value.isBlank()) {
-            System.out.println("坐标值无效, 必须是 x,z 格式");
+            CLI.log("坐标值无效, 必须是 x,z 格式");
             return null;
         }
 
         String[] parts = value.split(",");
         if (parts.length != 2) {
-            System.out.println("坐标值无效, 必须是 x,z 格式");
+            CLI.log("坐标值无效, 必须是 x,z 格式");
             return null;
         }
 
@@ -35,7 +36,7 @@ public class PositionCodec extends Codec<Position> {
             int z = Integer.parseInt(parts[1].trim());
             return new Position(x, z);
         } catch (NumberFormatException e) {
-            System.out.println("坐标值无效, 必须是 x,z 格式");
+            CLI.log("坐标值无效, 必须是 x,z 格式");
             return null;
         }
     }

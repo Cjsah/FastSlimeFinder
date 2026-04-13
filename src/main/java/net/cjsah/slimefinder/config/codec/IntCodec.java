@@ -1,5 +1,6 @@
 package net.cjsah.slimefinder.config.codec;
 
+import net.cjsah.slimefinder.CLI;
 import net.cjsah.slimefinder.config.Config;
 
 import java.util.function.BiConsumer;
@@ -21,7 +22,7 @@ public class IntCodec extends Codec<Integer> {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            System.out.println("配置文件中的 " + this.key + " 的值无效，必须是一个整数。");
+            CLI.log("配置文件中的 " + this.key + " 的值无效，必须是一个整数。");
             return null;
         }
     }

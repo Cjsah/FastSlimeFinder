@@ -1,5 +1,6 @@
 package net.cjsah.slimefinder.config.codec;
 
+import net.cjsah.slimefinder.CLI;
 import net.cjsah.slimefinder.config.Config;
 import net.cjsah.slimefinder.config.Mode;
 
@@ -20,7 +21,7 @@ public class ModeCodec extends Codec<Mode> {
     @Override
     protected Mode deserialize(String value) {
         if (value == null || value.isBlank()) {
-            System.out.println("坐标值无效, 必须是 x,z 格式");
+            CLI.log("坐标值无效, 必须是 x,z 格式");
             return null;
         }
 
@@ -30,7 +31,7 @@ public class ModeCodec extends Codec<Mode> {
             if (mode.getName().equals(name)) return mode;
         }
 
-        System.out.println("mode 值无效, 使用默认值");
+        CLI.log("mode 值无效, 使用默认值");
         return null;
     }
 }

@@ -1,6 +1,7 @@
 package net.cjsah.slimefinder.task;
 
 import lombok.Data;
+import net.cjsah.slimefinder.CLI;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -16,7 +17,7 @@ public abstract class TimerTask implements Runnable {
         this.startTime = Instant.now();
         this.start();
         this.paused();
-        System.out.printf("全部任务完成，耗时: %s", this.formatDuration());
+        CLI.log("全部任务完成，耗时: %s".formatted(this.formatDuration()));
     }
 
     public abstract void start();
@@ -27,8 +28,9 @@ public abstract class TimerTask implements Runnable {
     }
 
     public String formatDuration() {
-        if (this.duration == null) return "";
-        long totalMillis = this.duration.toMillis();
+        Instant now = Instant.now();
+        Duration duration = Duration.between(this.startTime, now);
+        long totalMillis = duration.toMillis();
         long seconds = totalMillis / 1000;
         long millis = totalMillis % 1000;
         return String.format("%d.%03ds", seconds, millis);

@@ -1,5 +1,6 @@
 package net.cjsah.slimefinder.task;
 
+import net.cjsah.slimefinder.CLI;
 import net.cjsah.slimefinder.config.Config;
 import net.cjsah.slimefinder.config.Mode;
 import net.cjsah.slimefinder.data.ChunkInfo;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FinderTask extends TimerTask {
     private final long seed;
@@ -21,6 +23,8 @@ public class FinderTask extends TimerTask {
     private final Position offset;
     private final int radius;
     private final int record;
+    private final int total;
+    private final AtomicInteger process = new AtomicInteger(0);
 
     public FinderTask(Config config, long seed) {
         this.seed = seed;
@@ -29,6 +33,18 @@ public class FinderTask extends TimerTask {
         this.offset = config.getOffset();
         this.radius = config.getRadius();
         this.record = config.getRecord();
+        int length = this.radius * 2 + 1;
+        this.total = length * length;
+    }
+
+    public String getProcess() {
+        int process = this.process.get();
+        return "%.2f%% (%d/%d) %s".formatted(
+            process * 100.0F / this.total,
+            process,
+            this.total,
+            this.formatDuration()
+        );
     }
 
     @Override
@@ -46,39 +62,41 @@ public class FinderTask extends TimerTask {
 
         List<ChunkInfo> founded = Arrays.stream(chunks).parallel()
             .peek(chunk -> {
-                if (!chunk.updateIsSlimeChunk(this.seed, startX, startZ)) return;
-                int cx = chunk.getX() * 16 + this.offset.x();
-                int cz = chunk.getZ() * 16 + this.offset.z();
-                for (int x = 0; x < 17; x++) {
-                    for (int z = 0; z < 17; z++) {
-                        int chunkX = chunk.getX() + x - 8;
-                        int chunkZ = chunk.getZ() + z - 8;
+                if (chunk.updateIsSlimeChunk(this.seed, startX, startZ)) {
+                    int cx = chunk.getX() * 16 + this.offset.x();
+                    int cz = chunk.getZ() * 16 + this.offset.z();
+                    for (int x = 0; x < 17; x++) {
+                        for (int z = 0; z < 17; z++) {
+                            int chunkX = chunk.getX() + x - 8;
+                            int chunkZ = chunk.getZ() + z - 8;
 
-                        int index = chunkX * length + chunkZ;
-                        if (index < 0 || index >= chunks.length) continue;
+                            int index = chunkX * length + chunkZ;
+                            if (index < 0 || index >= chunks.length) continue;
 
-                        if (!this.mode.isCenter(x, z) && this.mode.isCovered(cx, cz, chunkX, chunkZ)) {
-                            ChunkInfo center = chunks[index];
-                            center.near(this.mode.calcCoverBlockCount(this.offset, center, chunk));
+                            if (!this.mode.isCenter(x, z) && this.mode.isCovered(cx, cz, chunkX, chunkZ)) {
+                                ChunkInfo center = chunks[index];
+                                center.near(this.mode.calcCoverBlockCount(this.offset, center, chunk));
+                            }
                         }
                     }
                 }
+                this.process.incrementAndGet();
             })
             .sorted(Comparator.comparingInt(ChunkInfo::getBlockCounter).reversed())
             .limit(this.record)
             .toList();
 
-        this.paused();
-        System.out.printf("搜索完成，共找到前 %d 个合适的史莱姆区块. 耗时: %s%n", founded.size(), this.formatDuration());
+        CLI.completedSearch(this);
+        CLI.log("搜索完成，共找到前 %d 个合适的史莱姆区块. 耗时: %s".formatted(founded.size(), this.formatDuration()));
         for (ChunkInfo info : founded) {
             int cx = info.getX() + startX;
             int cz = info.getZ() + startZ;
             int px = cx * 16 + this.offset.x();
             int pz = cz * 16 + this.offset.z();
-            System.out.printf("Pos:[x=%d, z=%d] Chunk:[x=%d, z=%d] 共%d个史莱姆区块, %d个方块%n", px, pz, cx, cz, info.getChunkCounter(), info.getBlockCounter());
+            CLI.log("Pos:[x=%d, z=%d] Chunk:[x=%d, z=%d] 共%d个史莱姆区块, %d个方块".formatted(px, pz, cx, cz, info.getChunkCounter(), info.getBlockCounter()));
         }
 
-        System.out.println("正在生成图片...");
+        CLI.log("正在生成图片...");
 
         for (ChunkInfo info : founded) {
             int cx = info.getX() + startX;
@@ -92,7 +110,7 @@ public class FinderTask extends TimerTask {
                 file.getParentFile().mkdirs();
                 ImageIO.write(image, "png", file);
             } catch (Exception e) {
-                System.out.printf("保存图片文件失败: %s%n", e.getMessage());
+                CLI.log("保存图片文件失败: %s".formatted(e.getMessage()));
             }
         }
 
