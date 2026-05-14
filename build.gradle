@@ -41,6 +41,10 @@ jar {
             // Replace placeholder token in script templates with the actual jar filename.
             filter { String line -> line.replace('$filename$', builtJarName) }
         }
+        copy {
+            from("README.md")
+            into(destinationDirectory)
+        }
     }
 }
 
