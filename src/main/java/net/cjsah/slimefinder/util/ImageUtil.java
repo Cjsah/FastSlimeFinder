@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 
 public class ImageUtil {
 
-    public static BufferedImage drawImage(ChunkInfo[] chunks, ChunkInfo info, int length, Position offset, Mode mode) {
+    public static BufferedImage drawImage(ChunkInfo[] chunks, ChunkInfo info, int length, Position offset) {
         int cx = 128 + offset.x();
         int cz = 128 + offset.z();
 
@@ -26,7 +26,7 @@ public class ImageUtil {
                 boolean isSlimeChunk = index >= 0 && index < chunks.length && chunks[index].isSlimeChunk();
                 Color color = isSlimeChunk ? Color.GREEN : Color.WHITE;
 
-                if (mode.isCenter(x, z) || !mode.isCovered(cx, cz, x, z)) {
+                if (Mode.NORMAL.isCenter(x, z) || !Mode.NORMAL.isCovered(cx, cz, x, z)) {
                     color = getMarkColor(color);
                 }
 

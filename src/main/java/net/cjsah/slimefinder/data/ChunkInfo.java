@@ -28,10 +28,6 @@ public class ChunkInfo {
         return (this.isSlimeChunk = rng.nextInt(10) == 0);
     }
 
-    public void near() {
-        this.chunkCounter.incrementAndGet();
-    }
-
     public void near(int count) {
         this.chunkCounter.incrementAndGet();
         this.blockCounter.addAndGet(count);
