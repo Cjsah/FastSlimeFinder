@@ -108,7 +108,7 @@ public class FinderTask extends TimerTask {
             .toList();
 
         CLI.completedSearch(this);
-        CLI.log("搜索完成，共找到前 %d 个合适的史莱姆区块. 耗时: %s".formatted(founded.size(), this.formatDuration()));
+        CLI.log("搜索完成，记录前 %d 个合适的史莱姆区块. 耗时: %s".formatted(founded.size(), this.formatDuration()));
         for (ChunkInfo info : founded) {
             int cx = info.getX() + startX;
             int cz = info.getZ() + startZ;
